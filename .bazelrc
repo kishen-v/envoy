@@ -528,3 +528,37 @@ try-import %workspace%/repo.bazelrc
 try-import %workspace%/clang.bazelrc
 try-import %workspace%/user.bazelrc
 try-import %workspace%/local_tsan.bazelrc
+
+#############################################################################
+# ppc64le cross-compilation configuration
+#############################################################################
+
+# Cross-build Envoy from x86_64 Linux using a system-installed ppc64le GNU toolchain.
+# This follows the same "local_config_cc + explicit compiler env" model used for gcc
+# builds in this repository, while keeping host tools on the native x86_64 host.
+build:ppc64le --config=linux
+build:ppc64le --config=libstdc++
+build:ppc64le --repo_env=CC=powerpc64le-linux-gnu-gcc
+build:ppc64le --repo_env=CXX=powerpc64le-linux-gnu-g++
+build:ppc64le --action_env=CC=powerpc64le-linux-gnu-gcc
+build:ppc64le --action_env=CXX=powerpc64le-linux-gnu-g++
+build:ppc64le --action_env=AR=powerpc64le-linux-gnu-ar
+build:ppc64le --action_env=LD=powerpc64le-linux-gnu-ld
+build:ppc64le --host_action_env=CC=gcc
+build:ppc64le --host_action_env=CXX=g++
+build:ppc64le --host_action_env=AR=ar
+build:ppc64le --host_action_env=LD=ld
+build:ppc64le --platforms=@platforms//os:linux
+build:ppc64le --cpu=ppc
+build:ppc64le --compiler=gcc
+build:ppc64le --copt=-mcpu=power8
+build:ppc64le --copt=-mtune=power8
+build:ppc64le --cxxopt=-mcpu=power8
+build:ppc64le --cxxopt=-mtune=power8
+build:ppc64le --conlyopt=-mcpu=power8
+build:ppc64le --conlyopt=-mtune=power8
+build:ppc64le --linkopt=-fuse-ld=gold
+build:ppc64le --host_linkopt=-fuse-ld=gold
+build:ppc64le --action_env=BAZEL_COMPILER=gcc
+build:ppc64le --action_env=BAZEL_LINKOPTS=-lm:-fuse-ld=gold
+build:ppc64le --define=tcmalloc=disabled

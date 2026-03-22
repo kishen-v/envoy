@@ -23,6 +23,8 @@ if [[ "${ENVOY_BUILD_ARCH}" == "x86_64" ]]; then
   BUILD_ARCH_DIR="/linux/amd64"
 elif [[ "${ENVOY_BUILD_ARCH}" == "aarch64" ]]; then
   BUILD_ARCH_DIR="/linux/arm64"
+elif [[ "${ENVOY_BUILD_ARCH}" == "ppc64le" ]]; then
+  BUILD_ARCH_DIR="/linux/ppc64le"
 else
   # Fall back to use the ENVOY_BUILD_ARCH itself.
   BUILD_ARCH_DIR="/linux/${ENVOY_BUILD_ARCH}"
@@ -669,8 +671,10 @@ case $CI_TARGET in
               //distribution:packages.tar.gz
         if [[ "${ENVOY_BUILD_ARCH}" == "x86_64" ]]; then
             cp -a bazel-bin/distribution/packages.tar.gz "${ENVOY_BUILD_DIR}/packages.x64.tar.gz"
-        else
+        elif [[ "${ENVOY_BUILD_ARCH}" == "aarch64" ]]; then
             cp -a bazel-bin/distribution/packages.tar.gz "${ENVOY_BUILD_DIR}/packages.arm64.tar.gz"
+        elif [[ "${ENVOY_BUILD_ARCH}" == "ppc64le" ]]; then
+            cp -a bazel-bin/distribution/packages.tar.gz "${ENVOY_BUILD_DIR}/packages.ppc64le.tar.gz"
         fi
         ;;
 
@@ -693,7 +697,8 @@ case $CI_TARGET in
         _PLATFORMS=()
         PLATFORM_NAMES=(
             x64:linux/amd64
-            arm64:linux/arm64)
+            arm64:linux/arm64
+            ppc64le:linux/ppc64le)
         # TODO(phlax): avoid copying bins
         for platform_name in "${PLATFORM_NAMES[@]}"; do
             path="$(echo "${platform_name}" | cut -d: -f1)"

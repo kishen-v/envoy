@@ -103,6 +103,11 @@ label_flag(
 )
 
 label_flag(
+    name = "ppc64le-packages",
+    build_setting_default = ":placeholder",
+)
+
+label_flag(
     name = "x64-release",
     build_setting_default = ":placeholder",
 )
@@ -112,11 +117,17 @@ label_flag(
     build_setting_default = ":placeholder",
 )
 
+label_flag(
+    name = "ppc64le-release",
+    build_setting_default = ":placeholder",
+)
+
 # NOTE: HANDLES SECRETS
 genrule(
     name = "multi_arch_debs",
     srcs = [
         ":arm64-packages",
+        ":ppc64le-packages",
         ":x64-packages",
     ],
     outs = ["multiarch-debs.tar.gz"],
@@ -130,13 +141,16 @@ genrule(
         NEEDS_PATH=1
     elif [[ $$(basename $(location :arm64-packages)) == "PLACEHOLDER.TXT" ]]; then
         NEEDS_PATH=1
+    elif [[ $$(basename $(location :ppc64le-packages)) == "PLACEHOLDER.TXT" ]]; then
+        NEEDS_PATH=1
     fi
     if [[ -n $$NEEDS_PATH ]]; then
-        echo "You must set //distribution:x64-packages and //distribution:arm64-packages to build multiarch debs" >&2
+        echo "You must set //distribution:x64-packages, //distribution:arm64-packages, and //distribution:ppc64le-packages to build multiarch debs" >&2
         exit 1
     fi
     tar xf $(location :x64-packages) -C "$$tmpdir"
     tar xf $(location :arm64-packages) -C "$$tmpdir"
+    tar xf $(location :ppc64le-packages) -C "$$tmpdir"
     rm "$${tmpdir}/signing.key"
     mv "$${tmpdir}/deb/"* "$${tmpdir}"
     rm -rf "$${tmpdir}/deb/"
@@ -155,6 +169,7 @@ genrule(
     srcs = [
         ":arm64-release",
         ":multi_arch_debs",
+        ":ppc64le-release",
         ":x64-release",
     ],
     outs = ["release.signed.tar.zst"],
@@ -166,19 +181,24 @@ genrule(
         NEEDS_PATH=1
     elif [[ $$(basename $(location :arm64-release)) == "PLACEHOLDER.TXT" ]]; then
         NEEDS_PATH=1
+    elif [[ $$(basename $(location :ppc64le-release)) == "PLACEHOLDER.TXT" ]]; then
+        NEEDS_PATH=1
     fi
     if [[ -n $$NEEDS_PATH ]]; then
-        echo "You must set //distribution:x64-release and //distribution:arm64-release for signing packages" >&2
+        echo "You must set //distribution:x64-release, //distribution:arm64-release, and //distribution:ppc64le-release for signing packages" >&2
         exit 1
     fi
     $(location //tools/distribution:sign) \
         "bin:$(location :multi_arch_debs)" \
         "x64:$(location :x64-release)" \
         "arm64:$(location :arm64-release)" \
+        "ppc64le:$(location :ppc64le-release)" \
         -m x64/envoy:bin/envoy-$${VERSION}-linux-x86_64 \
         -m x64/envoy-contrib:bin/envoy-contrib-$${VERSION}-linux-x86_64 \
         -m arm64/envoy:bin/envoy-$${VERSION}-linux-aarch_64 \
         -m arm64/envoy-contrib:bin/envoy-contrib-$${VERSION}-linux-aarch_64 \
+        -m ppc64le/envoy:bin/envoy-$${VERSION}-linux-ppc64le \
+        -m ppc64le/envoy-contrib:bin/envoy-contrib-$${VERSION}-linux-ppc64le \
            --out $@
     """ % VERSION,
     tags = [

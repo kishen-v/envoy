@@ -11,7 +11,7 @@ DOCKER_BUILD_TIMEOUT="${DOCKER_BUILD_TIMEOUT:-500}"
 if [[ -n "$DOCKER_BUILD_PLATFORM" ]]; then
     DOCKER_PLATFORM="${DOCKER_BUILD_PLATFORM}"
 else
-    DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/arm64,linux/amd64}"
+    DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/arm64,linux/amd64,linux/ppc64le}"
 fi
 
 if [[ -n "$DOCKER_CI_DRYRUN" ]]; then
